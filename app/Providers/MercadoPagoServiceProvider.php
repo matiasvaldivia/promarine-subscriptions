@@ -21,6 +21,11 @@ class MercadoPagoServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(MercadoPagoGatewayInterface::class, function ($app) {
+            // En testing, siempre mock sin importar las credenciales
+            if (app()->environment('testing')) {
+                return new MockMercadoPagoGateway();
+            }
+
             $accessToken = config('services.mercadopago.access_token');
 
             if (! empty($accessToken)) {

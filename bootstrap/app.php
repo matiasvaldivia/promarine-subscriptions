@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'role' => \App\Http\Middleware\EnsureAdminRole::class,
+        ]);
+
         // El túnel público termina TLS antes de Nginx. Confiar en sus
         // encabezados permite que Laravel conserve esquema/host HTTPS al
         // generar URLs y validar la sesión CSRF.
