@@ -54,6 +54,7 @@
 <x-layouts.app>
 <div
     class="pm-site"
+    :class="themeLight ? '' : 'pm-theme-dark'"
     x-data="subscriptionWizard(@js($wizardProducts), @js($customerProfile), @js($portalRepurchase))"
 >
     <header class="pm-header" :class="wizardActive ? 'is-purchase-active' : ''">
@@ -66,6 +67,7 @@
                 <a href="#faq">Preguntas</a>
                 <a href="/mi-plan" class="pm-client-access" x-show="!wizardActive" aria-label="Consultar mi plan Promarine"><span aria-hidden="true">◷</span><b>Mi plan</b></a>
                 <button type="button" class="pm-install-button" x-show="installAvailable && !wizardActive" x-cloak @click="installApp()" aria-label="Instalar Promarine en este dispositivo">Instalar</button>
+                <button type="button" class="pm-theme-toggle" x-show="!wizardActive" @click="toggleTheme()" :aria-label="themeLight ? 'Activar tema oscuro' : 'Activar tema claro'" :title="themeLight ? 'Activar tema oscuro' : 'Activar tema claro'"><span x-text="themeLight ? '☾' : '☀'" aria-hidden="true"></span><b x-text="themeLight ? 'Oscuro' : 'Claro'"></b></button>
                 <button type="button" class="pm-header-summary" x-show="wizardActive" @click="tap(); summaryOpen = true" aria-label="Abrir resumen de la configuración">Resumen · <strong x-text="money(total)"></strong></button>
                 <button type="button" class="pm-header-exit" x-show="wizardActive" @click="tap(); closeWizard()" aria-label="Salir del proceso de compra">×</button>
                 <a href="#elegir" class="pm-menu" x-show="!wizardActive" aria-label="Ir al catálogo" @click="startWizard()"><span></span><span></span><span></span></a>
@@ -113,7 +115,7 @@
                             aria-label="Seleccionar {{ $product->name }}"
                         >
                             <strong>{{ $orbitLabels[$loop->index] }}</strong>
-                            <img src="/assets/promarine/optimized/{{ $product->slug }}-composition-480.webp" width="480" height="600" alt="" loading="{{ $loop->first ? 'eager' : 'lazy' }}" fetchpriority="{{ $loop->first ? 'high' : 'low' }}" decoding="async">
+                            <img class="pm-theme-image" src="/assets/promarine/optimized/{{ $product->slug }}-composition-480.webp" data-dark-src="/assets/promarine/optimized/{{ $product->slug }}-composition-480.webp" data-light-src="/assets/promarine/products/{{ $product->slug }}-packshot-square.png" width="480" height="600" alt="" loading="{{ $loop->first ? 'eager' : 'lazy' }}" fetchpriority="{{ $loop->first ? 'high' : 'low' }}" decoding="async">
                             <span>{{ $product->name }}</span>
                         </button>
                     @endforeach

@@ -20,6 +20,7 @@ Alpine.data('subscriptionWizard', (products = [], customerProfile = null, repurc
     installAvailable: false,
     installPrompt: null,
     isStandalone: false,
+    themeLight: localStorage.getItem('promarine-theme') !== 'dark',
     consentModalOpen: false,
     activeConsentKey: null,
     consentReturnFocus: null,
@@ -153,6 +154,7 @@ Alpine.data('subscriptionWizard', (products = [], customerProfile = null, repurc
     init() {
         this.isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         document.documentElement.classList.toggle('pm-standalone', this.isStandalone);
+        this.applyTheme();
         if (this.repurchaseMode) {
             sessionStorage.removeItem('promarine-subscription-draft');
         } else {
@@ -175,6 +177,23 @@ Alpine.data('subscriptionWizard', (products = [], customerProfile = null, repurc
         if (this.repurchaseMode) {
             this.$nextTick(() => this.startWizard(1));
         }
+    },
+
+    applyTheme() {
+        this.themeLight = localStorage.getItem('promarine-theme') !== 'dark';
+        this.$nextTick(() => {
+            document.querySelector('.pm-site')?.classList.toggle('pm-theme-dark', !this.themeLight);
+            document.querySelectorAll('.pm-theme-image').forEach((image) => {
+                const source = this.themeLight ? image.dataset.lightSrc : image.dataset.darkSrc;
+                if (source && image.getAttribute('src') !== source) image.setAttribute('src', source);
+            });
+        });
+    },
+
+    toggleTheme() {
+        this.themeLight = !this.themeLight;
+        localStorage.setItem('promarine-theme', this.themeLight ? 'light' : 'dark');
+        this.applyTheme();
     },
 
     restoreDraft() {
