@@ -18,6 +18,8 @@ use Throwable;
 class CustomerPortalController extends Controller
 {
     private const CODE_EXPIRY_MINUTES = 10;
+    private const DEMO_EMAIL = 'tamara.demo@invalid.local';
+    private const DEMO_CODE = '246810';
 
     public function requestForm(Request $request)
     {
@@ -57,8 +59,9 @@ class CustomerPortalController extends Controller
                 ->whereNull('consumed_at')
                 ->update(['consumed_at' => now()]);
 
-            $code = (string) random_int(100000, 999999);
-            if (app()->environment('local') && str_ends_with($email, '@invalid.local')) {
+            $isDemoCustomer = app()->environment('local') && $email === self::DEMO_EMAIL;
+            $code = $isDemoCustomer ? self::DEMO_CODE : (string) random_int(100000, 999999);
+            if ($isDemoCustomer) {
                 $request->session()->put('customer_portal_demo_code', $code);
             } else {
                 $request->session()->forget('customer_portal_demo_code');
@@ -104,7 +107,7 @@ class CustomerPortalController extends Controller
 
         return view('customer-portal.verify', [
             'maskedEmail' => $this->maskEmail($email),
-            'demoCode' => app()->environment('local') && str_ends_with($email, '@invalid.local')
+            'demoCode' => app()->environment('local') && $email === self::DEMO_EMAIL
                 ? $request->session()->get('customer_portal_demo_code')
                 : null,
         ]);
