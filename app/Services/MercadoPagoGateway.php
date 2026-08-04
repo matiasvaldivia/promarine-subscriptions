@@ -39,6 +39,28 @@ class MercadoPagoGateway implements MercadoPagoGatewayInterface
         $this->preapproval = new PreApprovalClient();
     }
 
+    /**
+     * Devuelve la URL publica base para construir back_url y notification_url.
+     * MP rechaza URLs de localhost, asi que usamos la publica derivada del
+     * webhook_url configurado.
+     */
+    private function publicBaseUrl(): string
+    {
+        $configured = config('services.mercadopago.public_url');
+        if (! empty($configured)) {
+            return rtrim($configured, '/');
+        }
+
+        $webhook = config('services.mercadopago.webhook_url');
+        if (! empty($webhook)) {
+            // Quitar el path /webhooks/mercadopago del final
+            return rtrim(preg_replace('#/webhooks/mercadopago/?$#', '', $webhook), '/');
+        }
+
+        // Fallback: APP_URL (probablemente localhost, fallara contra MP)
+        return rtrim(config('app.url'), '/');
+    }
+
     public function createSubscription(array $data): GatewayResult
     {
         try {
@@ -48,11 +70,14 @@ class MercadoPagoGateway implements MercadoPagoGatewayInterface
             // 15 days -> 1 mes, 30 days -> 1 mes, 45 days -> 1 mes, 60 days -> 2 meses
             $frequencyMonths = max(1, (int) round($frequency / 30));
 
+            $publicBase = $this->publicBaseUrl();
+            $externalRef = $data['external_reference'] ?? 'pending';
+
             $preapproval = $this->preapproval->create([
                 'reason' => $data['reason'] ?? 'Promarine Suscripcion',
-                'external_reference' => $data['external_reference'] ?? null,
+                'external_reference' => $externalRef,
                 'payer_email' => $data['payer_email'] ?? null,
-                'back_url' => $data['back_url'] ?? route('checkout.payment', ['subscription' => $data['external_reference'] ?? 'pending'], false),
+                'back_url' => $data['back_url'] ?? ($publicBase . '/checkout/simulate/' . $externalRef . '/payment'),
                 'auto_recurring' => [
                     'frequency' => $frequencyMonths,
                     'frequency_type' => 'months',
@@ -60,7 +85,7 @@ class MercadoPagoGateway implements MercadoPagoGatewayInterface
                     'currency_id' => $data['currency'] ?? 'ARS',
                 ],
                 'status' => 'pending',
-                'notification_url' => config('services.mercadopago.webhook_url'),
+                'notification_url' => $publicBase . '/webhooks/mercadopago',
             ]);
 
             return new GatewayResult(
