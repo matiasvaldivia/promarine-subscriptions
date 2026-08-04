@@ -73,7 +73,8 @@ class CustomerPortalController extends Controller
                 'request_ip' => $request->ip(),
             ]);
 
-            try {
+            if (! $isDemoCustomer) {
+                try {
                 Mail::to($email)->send(new CustomerPortalAccessCode($code, self::CODE_EXPIRY_MINUTES));
             } catch (Throwable $exception) {
                 $portalCode->update(['consumed_at' => now()]);
@@ -88,6 +89,7 @@ class CustomerPortalController extends Controller
                     return back()
                         ->withInput()
                         ->withErrors(['email' => 'No pudimos enviar el código en este momento. Revisá la configuración de correo o volvé a intentarlo.']);
+                }
                 }
             }
         }
