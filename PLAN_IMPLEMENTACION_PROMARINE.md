@@ -289,3 +289,44 @@ Tamara debe definir:
 6. Texto legal de aceptación.
 
 Con esas definiciones se puede transformar la membresía de demostración en una suscripción comercial real sin mezclarla con la compra de productos.
+## 10. Deuda técnica de temas claro y oscuro
+
+### Estado actual
+
+- El tema claro es el modo inicial y usa la paleta blanca/turquesa de la tienda oficial.
+- El tema oscuro conserva la estética original Promarine.
+- El switch del navbar persiste la elección en `localStorage` con la clave `promarine-theme`.
+- Las imágenes del orbit se intercambian mediante `data-dark-src` y `data-light-src`.
+
+### Deuda y riesgos
+
+1. Los tokens de color están concentrados en overrides al final de `resources/css/app.css`.
+2. Todavía existen colores literales heredados que pueden producir contraste desigual.
+3. La preferencia no se sincroniza entre dispositivos ni se guarda en el perfil del cliente.
+4. No se usa `prefers-color-scheme` como valor inicial cuando no hay preferencia guardada.
+5. Las imágenes por tema no tienen un manifiesto central.
+6. Falta una auditoría automatizada WCAG AA para ambos temas.
+7. Falta una prueba visual/e2e del switch en desktop, móvil y wizard activo.
+
+### Estructura propuesta para una futura corrección
+
+```text
+resources/
+  css/themes/
+    tokens.css       # tokens semánticos compartidos
+    light.css        # valores del tema claro
+    dark.css         # valores del tema oscuro
+    components.css   # componentes sin colores literales
+  js/theme-manager.js
+  data/product-media.js
+tests/Browser/ThemeToggleTest.php
+```
+
+### Plan de saneamiento
+
+1. Extraer colores a tokens semánticos (`--color-bg`, `--color-text`, `--color-border`, `--color-accent`).
+2. Reemplazar colores literales y eliminar overrides duplicados.
+3. Centralizar la prioridad: preferencia guardada → preferencia del sistema → claro.
+4. Centralizar el manifiesto de assets y sus fallbacks.
+5. Ejecutar auditoría WCAG AA en 360, 768 y 1440 px.
+6. Validar que el tema no cambie ni pierda estado durante el wizard.
