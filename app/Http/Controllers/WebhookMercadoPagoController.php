@@ -42,8 +42,8 @@ class WebhookMercadoPagoController extends Controller
             $manifest = "id:{$dataId};request-id:{$xRequestId};ts:{$ts};";
             $expected = hash_hmac('sha256', $manifest, $secret);
 
-            if ($v1 && ! hash_equals($expected, $v1)) {
-                Log::warning('Webhook MP: firma inválida', [
+            if (! $v1 || ! hash_equals($expected, $v1)) {
+                Log::warning('Webhook MP: firma inválida o ausente', [
                     'expected' => $expected,
                     'received' => $v1,
                     'manifest' => $manifest,
