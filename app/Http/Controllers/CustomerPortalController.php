@@ -27,7 +27,10 @@ class CustomerPortalController extends Controller
             return redirect()->route('customer.portal.dashboard');
         }
 
-        return view('customer-portal.request');
+        return response()
+            ->view('customer-portal.request')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache');
     }
 
     public function sendCode(Request $request): RedirectResponse
@@ -107,12 +110,15 @@ class CustomerPortalController extends Controller
             return redirect()->route('customer.portal.request');
         }
 
-        return view('customer-portal.verify', [
-            'maskedEmail' => $this->maskEmail($email),
-            'demoCode' => app()->environment('local') && $email === self::DEMO_EMAIL
-                ? $request->session()->get('customer_portal_demo_code')
-                : null,
-        ]);
+        return response()
+            ->view('customer-portal.verify', [
+                'maskedEmail' => $this->maskEmail($email),
+                'demoCode' => app()->environment('local') && $email === self::DEMO_EMAIL
+                    ? $request->session()->get('customer_portal_demo_code')
+                    : null,
+            ])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache');
     }
 
     public function verify(Request $request): RedirectResponse
