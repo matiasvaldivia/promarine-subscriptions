@@ -20,7 +20,7 @@ Alpine.data('subscriptionWizard', (products = [], customerProfile = null, repurc
     installAvailable: false,
     installPrompt: null,
     isStandalone: false,
-    themeLight: localStorage.getItem('promarine-theme') !== 'dark',
+    themeLight: localStorage.getItem('promarine-theme') === 'light', // default → dark (igual que el script del <head>)
     consentModalOpen: false,
     activeConsentKey: null,
     consentReturnFocus: null,
@@ -182,7 +182,7 @@ Alpine.data('subscriptionWizard', (products = [], customerProfile = null, repurc
 
     applyTheme() {
         // Solo sincroniza estado — Alpine :class maneja el DOM
-        this.themeLight = localStorage.getItem('promarine-theme') !== 'dark';
+        this.themeLight = localStorage.getItem('promarine-theme') === 'light'; // default → dark
         this.$nextTick(() => this._swapThemeImages());
     },
 
