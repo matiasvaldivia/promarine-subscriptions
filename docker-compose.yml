@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     working_dir: /var/www/html
+    env_file:
+      - .env
     volumes:
       - ./:/var/www/html
       - composer_cache:/tmp/composer-cache
