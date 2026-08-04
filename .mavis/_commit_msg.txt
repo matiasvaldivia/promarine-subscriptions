@@ -1,0 +1,9 @@
+﻿fix: derive public URL for back_url/notification_url from webhook config
+
+MP rejects URLs containing 'localhost' with HTTP 400.
+The gateway was using route() which generates http://localhost:8080
+in this dev environment. Added publicBaseUrl() that derives the
+public base URL from services.mercadopago.webhook_url.
+
+Verified: full preapproval create with sandbox token returns
+HTTP 201 with valid init_point.

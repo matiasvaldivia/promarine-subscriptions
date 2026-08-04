@@ -60,7 +60,12 @@
     <header class="pm-header" :class="wizardActive ? 'is-purchase-active' : ''">
         <div class="pm-container pm-header__inner">
             <a href="#inicio" class="pm-header__brand" aria-label="Promarine — inicio">
-                <span class="pm-header__urchin" aria-hidden="true"><img src="/assets/promarine/optimized/promarine-urchin-320.webp" width="320" height="295" alt="" fetchpriority="high" decoding="async"></span>
+                <span class="pm-header__urchin" aria-hidden="true"><img
+                    src="/assets/promarine/optimized/promarine-urchin-320.webp"
+                    class="pm-theme-image"
+                    data-dark-src="/assets/promarine/optimized/promarine-urchin-320.webp"
+                    data-light-src="/assets/promarine/brand/promarine-sea-urchin-mark-black.png"
+                    width="320" height="295" alt="" fetchpriority="high" decoding="async"></span>
                 <img class="pm-header__wordmark" src="/assets/promarine/optimized/promarine-logo-300.webp" width="300" height="90" alt="Promarine" fetchpriority="high" decoding="async">
             </a>
             <nav class="pm-header__nav" aria-label="Navegación principal">
@@ -101,8 +106,10 @@
                     <img
                         src="/assets/promarine/optimized/promarine-urchin-320.webp"
                         alt=""
-                        class="pm-urchin"
+                        class="pm-urchin pm-theme-image"
                         data-scroll-urchin
+                        data-dark-src="/assets/promarine/optimized/promarine-urchin-320.webp"
+                        data-light-src="/assets/promarine/brand/promarine-sea-urchin-mark-black.png"
                         width="320"
                         height="295"
                         decoding="async"
@@ -165,7 +172,7 @@
         </section>
 
         <section class="pm-final-cta">
-            <div class="pm-container"><img src="/assets/promarine/optimized/promarine-urchin-320.webp" width="320" height="295" alt="" loading="lazy" decoding="async"><div><span>Rutina marina, gestión simple</span><h2>Elegí tu Promarine.</h2></div><a href="#elegir" class="pm-button" @click="startWizard()">Comenzar la simulación <span aria-hidden="true">→</span></a></div>
+            <div class="pm-container"><img src="/assets/promarine/optimized/promarine-urchin-320.webp" class="pm-theme-image" data-dark-src="/assets/promarine/optimized/promarine-urchin-320.webp" data-light-src="/assets/promarine/brand/promarine-sea-urchin-mark-black.png" width="320" height="295" alt="" loading="lazy" decoding="async"><div><span>Rutina marina, gestión simple</span><h2>Elegí tu Promarine.</h2></div><a href="#elegir" class="pm-button" @click="startWizard()">Comenzar la simulación <span aria-hidden="true">→</span></a></div>
         </section>
     </main>
 

@@ -1,0 +1,41 @@
+host_bd=srv1818.hstgr.io
+pass_bd=8uJ>S!++Kr
+base_name=u997380844_promarinesub
+user_bd=u997380844_promarinesub
+
+user_tamar=tamara
+pass_tamar=promarine2026!
+APP_KEY=base64:ZHp/fCgVdUnxs0VX+fMtZqq8h0RPBh2QMco6DDufewc=
+
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtps
+MAIL_HOST=smtp.hostinger.com
+MAIL_PORT=465
+MAIL_USERNAME=no-responder-test@matiasvaldivia.com.ar
+MAIL_PASSWORD=8uJ>S!++Kr
+MAIL_FROM_ADDRESS="no-responder-test@matiasvaldivia.com.ar"
+MAIL_FROM_NAME="Promarine"
+
+
+#mercado pago 
+MP_Public_Key=TEST-f4e9c7e6-0685-41a0-95af-a7fcbc890dbf
+MP_Access_Token=TEST-1105001575611280-121118-e942e9407baadaab8de88e8436573618-499466249
+
+##https://promarine.matiasvaldivia.com.ar/webhooks/mercadopago
+mp_clave_webhook=a33692d52192fbb03e407f02532c6f2f6b3a14468773d5f708a39008cbb9a7c1
+
+## Configurar notificaciones Webhooks esta  enlan marcadas!
+#Vinculación de aplicaciones
+#Alertas de fraude
+#Card Updater
+#Perfil de pago
+#Pagos
+#Planes y suscripciones
+#Delivery (proximity marketplace)
+#Wallet Connect
+
+# Mercado Pago - agregado para test real
+MP_Public_Key=TEST-f4e9c7e6-0685-41a0-95af-a7fcbc890dbf
+MP_Access_Token=TEST-1105001575611280-121118-e942e9407baadaab8de88e8436573618-499466249
+URL_MP_webhooks=https://promarine.matiasvaldivia.com.ar/webhooks/mercadopago
+mp_clave_webhook=a33692d52192fbb03e407f02532c6f2f6b3a14468773d5f708a39008cbb9a7c1
