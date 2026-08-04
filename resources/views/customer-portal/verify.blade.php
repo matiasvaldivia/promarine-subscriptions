@@ -8,6 +8,7 @@
         <h1>Ingresá el código</h1>
         <p>Enviamos seis números a <strong>{{ $maskedEmail }}</strong>. El código vence en 10 minutos.</p>
         @if(session('status'))<div class="pm-portal-message">{{ session('status') }}</div>@endif
+        @if($demoCode)<div class="pm-portal-demo-code"><span>CÓDIGO DEMO LOCAL</span><strong>{{ $demoCode }}</strong><small>Este código aparece sólo para el correo ficticio de pruebas.</small></div>@endif
         @if($errors->any())<div class="pm-portal-error">{{ $errors->first() }}</div>@endif
         <form method="POST" action="{{ route('customer.portal.verify-code') }}">
             @csrf

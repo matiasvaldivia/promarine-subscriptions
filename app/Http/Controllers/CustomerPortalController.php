@@ -58,6 +58,11 @@ class CustomerPortalController extends Controller
                 ->update(['consumed_at' => now()]);
 
             $code = (string) random_int(100000, 999999);
+            if (app()->environment('local') && str_ends_with($email, '@invalid.local')) {
+                $request->session()->put('customer_portal_demo_code', $code);
+            } else {
+                $request->session()->forget('customer_portal_demo_code');
+            }
             $portalCode = CustomerPortalCode::create([
                 'email' => $email,
                 'code_hash' => Hash::make($code),
@@ -99,6 +104,9 @@ class CustomerPortalController extends Controller
 
         return view('customer-portal.verify', [
             'maskedEmail' => $this->maskEmail($email),
+            'demoCode' => app()->environment('local') && str_ends_with($email, '@invalid.local')
+                ? $request->session()->get('customer_portal_demo_code')
+                : null,
         ]);
     }
 
@@ -138,6 +146,7 @@ class CustomerPortalController extends Controller
         $request->session()->regenerate();
         $request->session()->put('customer_portal_email', $email);
         $request->session()->forget('customer_portal_pending_email');
+        $request->session()->forget('customer_portal_demo_code');
 
         return redirect()->route('customer.portal.dashboard');
     }
