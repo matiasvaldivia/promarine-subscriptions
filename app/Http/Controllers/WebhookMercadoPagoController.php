@@ -85,13 +85,43 @@ class WebhookMercadoPagoController extends Controller
         }
 
         // En sandbox, cuando el pago se aprueba el preapproval pasa a "authorized"
-        // Actualizamos el estado en nuestra DB
-        $subscription->update(['status' => 'authorized']);
+        // Procesamos el pago completo: activa suscripción + registra pago + envía email
+        if (in_array($subscription->status, ['pending', 'payment_rejected'])) {
+            try {
+                $subscription->load('plan.variant.product');
+                $customer = \Illuminate\Support\Facades\DB::table('mock_customers')
+                    ->where('id', $subscription->customer_id)
+                    ->first();
 
-        Log::info('Webhook MP: suscripción actualizada a authorized', [
-            'uuid'  => $subscription->uuid,
-            'mp_id' => $mpId,
-        ]);
+                $processed = $flow->processPayment($subscription, 'approved', 'webhook-mp-' . $mpId);
+
+                if (! $processed['duplicate'] && $customer) {
+                    \Illuminate\Support\Facades\Mail::to($customer->email)
+                        ->send(new \App\Mail\MockPurchaseConfirmed(
+                            $subscription->fresh()->load('plan.variant.product'),
+                            $customer,
+                            $processed['payment'],
+                            $processed['order'],
+                        ));
+                }
+
+                Log::info('Webhook MP: suscripción activada por IPN', [
+                    'uuid'      => $subscription->uuid,
+                    'mp_id'     => $mpId,
+                    'duplicate' => $processed['duplicate'],
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('Webhook MP: error procesando preapproval', [
+                    'mp_id'   => $mpId,
+                    'error'   => $e->getMessage(),
+                ]);
+            }
+        } else {
+            Log::info('Webhook MP: preapproval ya procesado, ignorando', [
+                'uuid'   => $subscription->uuid,
+                'status' => $subscription->status,
+            ]);
+        }
     }
 
     private function handlePayment(string $mpPaymentId, MockSubscriptionFlow $flow): void
