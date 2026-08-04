@@ -1,0 +1,22 @@
+{
+  "name": "Promarine Suscripciones",
+  "short_name": "Promarine",
+  "description": "Configurá y gestioná tu suscripción Promarine.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#020c19",
+  "theme_color": "#020c19",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "/assets/promarine/promarine-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

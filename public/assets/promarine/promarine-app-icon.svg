@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Promarine">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="46%" r="68%">
+      <stop offset="0" stop-color="#123a50"/>
+      <stop offset=".62" stop-color="#061726"/>
+      <stop offset="1" stop-color="#020c19"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)"/>
+  <g fill="none" stroke="#8be9ee" stroke-linecap="round">
+    <circle cx="256" cy="220" r="112" stroke-opacity=".25" stroke-width="2"/>
+    <circle cx="256" cy="220" r="82" stroke-opacity=".4" stroke-width="2"/>
+    <path d="M256 112v216M148 220h216M180 144l152 152M332 144L180 296M205 120l102 200M307 120L205 320M156 170l200 100M356 170L156 270" stroke-width="5" stroke-opacity=".78"/>
+    <circle cx="256" cy="220" r="42" stroke="#f4c267" stroke-width="5"/>
+  </g>
+  <text x="256" y="408" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="42" letter-spacing="9" text-anchor="middle">PROMARINE</text>
+</svg>
