@@ -50,16 +50,33 @@
         </div>
     </section>
 
-    <section id="sumarme" class="pm-membership-enroll">
+    <section id="sumarme" class="pm-membership-enroll" x-data="{ step: {{ $errors->any() ? 2 : 1 }} }" x-cloak>
         <div class="pm-membership-enroll__summary">
             <span class="pm-membership-eyebrow">PLAN ANUAL PROMARINE</span>
             <h2>Solicitá tu membresía.</h2>
             <p>Esta versión permite probar la adhesión sin comprar productos y sin ingresar un medio de pago.</p>
             <dl><div><dt>Duración</dt><dd>12 meses</dd></div><div><dt>Productos incluidos</dt><dd>Ninguno</dd></div><div><dt>Valor anual</dt><dd>Por definir</dd></div><div><dt>Cobro ahora</dt><dd>$ 0 · DEMO</dd></div></dl>
+            <div class="pm-membership-enroll__selected" x-show="step === 2" x-transition>
+                <span>✓</span><p><b>Plan anual seleccionado</b><small>Sin producto · sin tarjeta · sin cobro real</small></p>
+            </div>
         </div>
-        <form class="pm-membership-form" method="POST" action="{{ route('membership.store') }}">
+        <div class="pm-membership-plan-choice" x-show="step === 1" x-transition>
+            <span class="pm-membership-form__step">PASO 01 DE 02</span>
+            <h2>Elegí tu plan anual</h2>
+            <p>Un único acceso para disfrutar beneficios durante 12 meses. La membresía no agrega productos ni inicia pedidos.</p>
+            <article class="pm-membership-plan-card" :class="{ 'is-selected': step === 2 }">
+                <div class="pm-membership-plan-card__top"><span>PLAN ANUAL</span><b>RECOMENDADO</b></div>
+                <h3>Promarine Member</h3>
+                <strong>12 meses</strong>
+                <ul><li>Descuentos para miembros</li><li>Entregas prioritarias</li><li>Información exclusiva</li></ul>
+                <p class="pm-membership-plan-card__price">Valor anual: <b>por definir</b></p>
+            </article>
+            <button type="button" class="pm-membership-button" @click="step = 2; $nextTick(() => document.querySelector('#membership-form')?.scrollIntoView({behavior: 'smooth', block: 'start'}))">Continuar con este plan <span>→</span></button>
+            <small class="pm-membership-form__safe">Podés revisar todo antes de enviar la solicitud</small>
+        </div>
+        <form id="membership-form" class="pm-membership-form" method="POST" action="{{ route('membership.store') }}" x-show="step === 2" x-transition>
             @csrf
-            <div><span>PASO ÚNICO</span><h2>Datos de la persona miembro</h2><p>Te enviaremos el comprobante de la solicitud a este correo.</p></div>
+            <div class="pm-membership-form__heading"><span>PASO 02 DE 02</span><button type="button" class="pm-membership-form__back" @click="step = 1">← Cambiar plan</button><h2>Datos de la persona miembro</h2><p>Te enviaremos el comprobante de la solicitud a este correo.</p></div>
             @if($errors->any())<div class="pm-membership-errors" role="alert">Revisá los campos marcados antes de continuar.</div>@endif
             <label>Nombre completo<input name="name" value="{{ old('name') }}" autocomplete="name" required placeholder="Tu nombre"></label>
             <label>Email<input type="email" name="email" value="{{ old('email') }}" autocomplete="email" required placeholder="tu@email.com"></label>
