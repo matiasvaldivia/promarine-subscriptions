@@ -28,3 +28,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Local workarounds and audit temp files (not committed)
+.mavis/
+.mavis/archive_/
