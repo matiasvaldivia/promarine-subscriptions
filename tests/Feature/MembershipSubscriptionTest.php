@@ -21,7 +21,7 @@ class MembershipSubscriptionTest extends TestCase
     public function test_page_explains_benefits_without_a_product_purchase(): void
     {
         $this->get('/Plan-de-subscription')->assertOk()
-            ->assertSee('MEMBRESÍA ANUAL')->assertSee('Precios para miembros')
+            ->assertSee('SUSCRIPCIÓN ANUAL')->assertSee('Precios para miembros')
             ->assertSee('Entregas prioritarias')->assertSee('Información exclusiva')
             ->assertSee('Ningún producto agregado')->assertSee('no genera cobros');
     }

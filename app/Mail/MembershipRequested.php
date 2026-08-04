@@ -17,7 +17,7 @@ class MembershipRequested extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Recibimos tu solicitud de membresía anual Promarine');
+        return new Envelope(subject: 'Recibimos tu solicitud de suscripción anual Promarine');
     }
 
     public function content(): Content

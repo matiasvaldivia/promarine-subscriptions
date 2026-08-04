@@ -26,7 +26,7 @@ class MembershipController extends Controller
             'community_updates' => 'sometimes|boolean',
             'consent_terms' => 'accepted',
         ], [
-            'consent_terms.accepted' => 'Necesitamos tu aceptación para registrar la membresía.',
+            'consent_terms.accepted' => 'Necesitamos tu aceptación para registrar la suscripción.',
         ]);
 
         $email = mb_strtolower(trim($data['email']));
@@ -57,7 +57,7 @@ class MembershipController extends Controller
             Mail::to($membership->email)->send(new MembershipRequested($membership));
             $mailSent = true;
         } catch (Throwable $exception) {
-            Log::warning('No se pudo enviar la confirmación de membresía.', [
+            Log::warning('No se pudo enviar la confirmación de suscripción.', [
                 'membership_uuid' => $membership->uuid,
                 'exception' => $exception->getMessage(),
             ]);

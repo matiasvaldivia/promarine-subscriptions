@@ -17,7 +17,7 @@ Construir una experiencia web mobile-first, similar a una aplicación, para:
 - Simular la autorización de pago sin generar cobros reales.
 - Permitir el acceso del cliente a su plan mediante email y código temporal.
 - Permitir que Tamara gestione decisiones, preguntas y simulaciones desde un área privada.
-- Incorporar una membresía anual independiente, sin obligar a comprar productos.
+- Incorporar una suscripción anual independiente, sin obligar a comprar productos.
 
 ## 2. Trabajo realizado
 
@@ -86,7 +86,7 @@ También se implementó:
 - Dashboard privado.
 - Cuestionarios e informe consolidado.
 - Simulador de escenarios.
-- Métricas de preguntas, políticas, productos, suscripciones simuladas y membresías.
+- Métricas de preguntas, políticas, productos y suscripciones simuladas.
 - Contraseñas almacenadas con hash.
 - Registro de auditoría de accesos.
 
@@ -100,11 +100,11 @@ Corrección aplicada en `bootstrap/app.php`: confianza en `X-Forwarded-For`, `X-
 
 Se verificó que el POST del login ahora responde con redirección HTTPS y no con 419.
 
-### 2.8 Membresía anual independiente
+### 2.8 Suscripción anual independiente
 
 Ruta principal: `/Plan-de-subscription`
 
-La nueva página permite solicitar una membresía anual sin comprar productos.
+La nueva página permite solicitar una suscripción anual sin comprar productos.
 
 Incluye:
 
@@ -289,4 +289,3 @@ Tamara debe definir:
 6. Texto legal de aceptación.
 
 Con esas definiciones se puede transformar la membresía de demostración en una suscripción comercial real sin mezclarla con la compra de productos.
-
