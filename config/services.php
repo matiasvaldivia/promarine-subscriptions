@@ -4,7 +4,13 @@ return [
 
     'firecrawl' => ['url' => env('FIRECRAWL_API_URL', 'http://100.80.187.55:3002')],
 
-    'mercadopago' => ['mode' => env('MERCADOPAGO_MODE', 'mock')],
+    'mercadopago' => [
+        'mode' => env('MERCADOPAGO_MODE', 'mock'),
+        'access_token' => env('MP_ACCESS_TOKEN'),
+        'public_key' => env('MP_PUBLIC_KEY'),
+        'webhook_url' => env('URL_MP_WEBHOOKS'),
+        'webhook_secret' => env('MP_CLAVE_WEBHOOK'),
+    ],
     'shopify' => ['mode' => env('SHOPIFY_MODE', 'mock')],
     'igs' => ['mode' => env('IGS_MODE', 'mock')],
 
