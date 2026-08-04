@@ -75,14 +75,14 @@ class CheckoutController extends Controller
             if ($portalCustomer) {
                 if (empty($data['use_saved_customer'])) {
                     $portalCustomer->update([
-                        'name' => $data['name'],
-                        'phone' => $data['phone'],
-                        'province' => $data['province'],
-                        'locality' => $data['locality'],
-                        'postal_code' => $data['postal_code'],
-                        'address' => $data['address'],
-                        'address_number' => $data['address_number'],
-                        'apartment' => $data['apartment'] ?? null,
+                        'name'              => $data['name'],
+                        'phone'             => $data['phone'],
+                        'province'          => $data['province'],
+                        'locality'          => $data['locality'],
+                        'postal_code'       => $data['postal_code'],
+                        'address'           => $data['address'],
+                        'address_number'    => $data['address_number'],
+                        'apartment'         => $data['apartment'] ?? null,
                         'address_reference' => $data['address_reference'] ?? null,
                     ]);
                 }
@@ -90,62 +90,100 @@ class CheckoutController extends Controller
                 $customerId = $portalCustomer->id;
             } else {
                 $customerId = DB::table('mock_customers')->insertGetId([
-                    'uuid' => (string) Str::uuid(),
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'phone' => $data['phone'],
-                    'province' => $data['province'],
-                    'locality' => $data['locality'],
-                    'postal_code' => $data['postal_code'],
-                    'address' => $data['address'],
-                    'address_number' => $data['address_number'],
-                    'apartment' => $data['apartment'] ?? null,
+                    'uuid'              => (string) Str::uuid(),
+                    'name'              => $data['name'],
+                    'email'             => $data['email'],
+                    'phone'             => $data['phone'],
+                    'province'          => $data['province'],
+                    'locality'          => $data['locality'],
+                    'postal_code'       => $data['postal_code'],
+                    'address'           => $data['address'],
+                    'address_number'    => $data['address_number'],
+                    'apartment'         => $data['apartment'] ?? null,
                     'address_reference' => $data['address_reference'] ?? null,
-                    'is_mock' => true,
-                    'environment' => 'local',
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'is_mock'           => true,
+                    'environment'       => 'local',
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
                 ]);
             }
 
-            $gateway = $mercadoPago->createSubscription(['amount' => $plan->amount]);
+            // Generamos el UUID de la suscripción antes de llamar a MP
+            // para poder pasarlo como external_reference y construir la back_url
+            $subscriptionUuid = (string) Str::uuid();
+            $productName      = $plan->variant->product->name ?? 'Producto';
+            $variantName      = $plan->variant->name ?? '';
 
-            return MockSubscription::create([
-                'uuid' => (string) Str::uuid(),
-                'customer_id' => $customerId,
-                'subscription_plan_id' => $plan->id,
-                'provider' => 'mercadopago',
-                'provider_subscription_id' => $gateway->id,
-                'status' => 'authorized',
-                'amount' => $plan->amount,
-                'currency' => $plan->currency,
-                'frequency' => $data['delivery_frequency'],
-                'frequency_type' => 'days',
-                'next_billing_at' => now()->addDays($data['delivery_frequency']),
-                'started_at' => now(),
-                'influencer_code' => $data['influencer_code'] ?? null,
-                'is_mock' => true,
-                'environment' => 'local',
-                'metadata_json' => [
-                    'source' => 'guided_landing',
-                    'customer_source' => $portalCustomer ? 'verified_portal' : 'new_checkout',
-                    'product' => $plan->variant->product->name,
-                    'presentation' => $plan->variant->name,
-                    'people' => $data['people'],
-                    'doses_per_day' => $data['doses_per_day'],
+            $gateway = $mercadoPago->createSubscription([
+                'amount'             => $plan->amount,
+                'currency'           => $plan->currency,
+                'delivery_frequency' => $data['delivery_frequency'],
+                'payer_email'        => $data['email'],
+                'external_reference' => $subscriptionUuid,
+                'reason'             => "Promarine · {$productName} {$variantName}",
+                // Usar MP_PUBLIC_URL para la back_url — MP rechaza localhost
+                'back_url'           => rtrim(config('services.mercadopago.public_url'), '/')
+                                         . '/checkout/simulate/' . $subscriptionUuid . '/payment',
+            ]);
+
+            $subscription = MockSubscription::create([
+                'uuid'                   => $subscriptionUuid,
+                'customer_id'            => $customerId,
+                'subscription_plan_id'   => $plan->id,
+                'provider'               => 'mercadopago',
+                'provider_subscription_id' => $gateway->id ?: ('pending-' . $subscriptionUuid),
+                'status'                 => $gateway->success ? 'pending' : 'authorized',
+                'amount'                 => $plan->amount,
+                'currency'               => $plan->currency,
+                'frequency'              => $data['delivery_frequency'],
+                'frequency_type'         => 'days',
+                'next_billing_at'        => now()->addDays((int) $data['delivery_frequency']),
+                'started_at'             => now(),
+                'influencer_code'        => $data['influencer_code'] ?? null,
+                'is_mock'                => true,
+                'environment'            => 'local',
+                'metadata_json'          => [
+                    'source'           => 'guided_landing',
+                    'customer_source'  => $portalCustomer ? 'verified_portal' : 'new_checkout',
+                    'product'          => $productName,
+                    'presentation'     => $variantName,
+                    'people'           => $data['people'],
+                    'doses_per_day'    => $data['doses_per_day'],
                     'delivery_frequency' => $data['delivery_frequency'],
-                    'shipping_status' => 'pending_configuration',
-                    'consents' => ['recurring', 'terms', 'order_after_payment', 'cancellation_policy'],
+                    'shipping_status'  => 'pending_configuration',
+                    'mp_init_point'    => $gateway->payload['init_point'] ?? null,
+                    'mp_environment'   => $gateway->payload['environment'] ?? 'mock',
+                    'consents'         => ['recurring', 'terms', 'order_after_payment', 'cancellation_policy'],
                     'community_preferences' => [
-                        'member' => ! empty($data['community_member']),
+                        'member'   => ! empty($data['community_member']),
                         'podcasts' => ! empty($data['notify_podcasts']),
-                        'talks' => ! empty($data['notify_talks']),
+                        'talks'    => ! empty($data['notify_talks']),
                     ],
                 ],
             ]);
+
+            // Adjuntar init_point al objeto para usarlo fuera de la transacción
+            $subscription->_mp_init_point = $gateway->payload['init_point'] ?? null;
+            $subscription->_mp_is_real    = ! ($gateway->payload['is_mock'] ?? true);
+
+            return $subscription;
         });
 
+        // Si el gateway real devolvió un init_point → redirigir al sandbox de MercadoPago
+        $initPoint = $subscription->_mp_init_point ?? null;
+        $isReal    = $subscription->_mp_is_real ?? false;
+
+        if ($isReal && $initPoint) {
+            Log::info('Redirecting to MercadoPago sandbox', [
+                'subscription_uuid' => $subscription->uuid,
+                'init_point'        => $initPoint,
+            ]);
+            return redirect($initPoint);
+        }
+
+        // Fallback: flujo interno (mock o error de MP)
         return redirect()->route('checkout.payment', $subscription);
+
     }
 
     public function payment(MockSubscription $subscription)

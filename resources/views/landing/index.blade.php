@@ -66,7 +66,11 @@
                     data-dark-src="/assets/promarine/optimized/promarine-urchin-320.webp"
                     data-light-src="/assets/promarine/brand/promarine-sea-urchin-mark-black.png"
                     width="320" height="295" alt="" fetchpriority="high" decoding="async"></span>
-                <img class="pm-header__wordmark" src="/assets/promarine/optimized/promarine-logo-300.webp" width="300" height="90" alt="Promarine" fetchpriority="high" decoding="async">
+                <img class="pm-header__wordmark pm-theme-image"
+                    src="/assets/promarine/optimized/promarine-logo-300.webp"
+                    data-dark-src="/assets/promarine/optimized/promarine-logo-300.webp"
+                    data-light-src="/assets/promarine/brand/promarine-logo-dark.svg"
+                    width="300" height="90" alt="Promarine" fetchpriority="high" decoding="async">
             </a>
             <nav class="pm-header__nav" aria-label="Navegación principal">
                 <a href="#faq">Preguntas</a>

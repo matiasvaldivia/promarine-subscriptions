@@ -1,7 +1,12 @@
 <?php
 
-use App\Http\Controllers\{AdminController,AuthController,CheckoutController,CustomerPortalController,InterviewController,LandingController,MembershipController,SimulatorController};
+use App\Http\Controllers\{AdminController,AuthController,CheckoutController,CustomerPortalController,InterviewController,LandingController,MembershipController,SimulatorController,WebhookMercadoPagoController};
 use Illuminate\Support\Facades\Route;
+
+// ── Webhook MercadoPago — SIN CSRF (validación por firma HMAC interna) ──────
+Route::post('/webhooks/mercadopago', [WebhookMercadoPagoController::class, 'handle'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->name('webhooks.mercadopago');
 
 Route::get('/', LandingController::class)->name('landing');
 Route::get('/plan-de-subscription', fn () => redirect()->route('membership.show', status: 301));

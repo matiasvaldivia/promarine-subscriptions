@@ -64,28 +64,56 @@ class MercadoPagoGateway implements MercadoPagoGatewayInterface
     public function createSubscription(array $data): GatewayResult
     {
         try {
-            $amount = $data['amount'] ?? 0;
-            $frequency = $data['delivery_frequency'] ?? 30;
-            // MP usa meses para frecuencia recurrente. Mapeamos:
-            // 15 days -> 1 mes, 30 days -> 1 mes, 45 days -> 1 mes, 60 days -> 2 meses
+            $amount    = (float) ($data['amount'] ?? 0);
+            $frequency = (int) ($data['delivery_frequency'] ?? 30);
+            // MP usa meses para frecuencia recurrente.
             $frequencyMonths = max(1, (int) round($frequency / 30));
 
-            $publicBase = $this->publicBaseUrl();
-            $externalRef = $data['external_reference'] ?? 'pending';
+            $publicBase    = $this->publicBaseUrl();
+            $externalRef   = $data['external_reference'] ?? ('sub-' . uniqid());
+            $payerEmail  = $data['payer_email'] ?? null;
+            $reason      = $data['reason'] ?? 'Promarine Suscripción';
+            $currency    = $data['currency'] ?? 'ARS';
 
-            $preapproval = $this->preapproval->create([
-                'reason' => $data['reason'] ?? 'Promarine Suscripcion',
+            // back_url: a dónde redirige MP después del pago.
+            $backUrl = $data['back_url']
+                ?? ($publicBase . '/checkout/simulate/' . $externalRef . '/payment');
+
+            // El payer_email es requerido por MP preapproval.
+            // Usamos el email real del comprador del formulario.
+            // En sandbox con token TEST, MP acepta el email como está.
+            // Si hay MP_TEST_PAYER_EMAIL configurado (usuario de prueba creado en panel MP),
+            // lo usamos en su lugar para testing end-to-end más riguroso.
+            $testPayerEmail     = config('services.mercadopago.test_payer_email');
+            $resolvedPayerEmail = $testPayerEmail ?: ($data['payer_email'] ?? null);
+
+            $preapprovalData = [
+                'reason'             => $reason,
                 'external_reference' => $externalRef,
-                'payer_email' => $data['payer_email'] ?? null,
-                'back_url' => $data['back_url'] ?? ($publicBase . '/checkout/simulate/' . $externalRef . '/payment'),
-                'auto_recurring' => [
-                    'frequency' => $frequencyMonths,
-                    'frequency_type' => 'months',
+                'back_url'           => $backUrl,
+                'auto_recurring'     => [
+                    'frequency'          => $frequencyMonths,
+                    'frequency_type'     => 'months',
                     'transaction_amount' => (float) $amount,
-                    'currency_id' => $data['currency'] ?? 'ARS',
+                    'currency_id'        => $currency,
                 ],
-                'status' => 'pending',
+                'status'           => 'pending',
                 'notification_url' => $publicBase . '/webhooks/mercadopago',
+            ];
+
+            if ($resolvedPayerEmail) {
+                $preapprovalData['payer_email'] = $resolvedPayerEmail;
+            }
+
+            $preapproval = $this->preapproval->create($preapprovalData);
+
+            $initPoint = $preapproval->init_point ?? null;
+
+            Log::info('MercadoPago preapproval created', [
+                'id'          => $preapproval->id,
+                'status'      => $preapproval->status,
+                'init_point'  => $initPoint,
+                'external_ref' => $externalRef,
             ]);
 
             return new GatewayResult(
@@ -93,16 +121,19 @@ class MercadoPagoGateway implements MercadoPagoGatewayInterface
                 id: $preapproval->id,
                 status: $preapproval->status ?? 'pending',
                 payload: [
-                    'init_point' => $preapproval->init_point ?? null,
-                    'is_mock' => false,
-                    'environment' => 'sandbox',
-                    'amount' => $amount,
+                    'init_point'       => $initPoint,
+                    'sandbox_url'      => $initPoint, // alias explícito
+                    'is_mock'          => false,
+                    'environment'      => 'sandbox',
+                    'amount'           => $amount,
                     'frequency_months' => $frequencyMonths,
+                    'external_reference' => $externalRef,
                 ]
             );
         } catch (MPApiException $e) {
             Log::error('MercadoPago createSubscription API error', [
-                'status' => $e->getApiResponse()->getStatusCode(),
+                'status'  => $e->getApiResponse()->getStatusCode(),
+                'content' => $e->getApiResponse()->getContent(),
                 'message' => $e->getMessage(),
             ]);
 
@@ -111,20 +142,23 @@ class MercadoPagoGateway implements MercadoPagoGatewayInterface
                 id: '',
                 status: 'error',
                 payload: [
-                    'error' => $e->getMessage(),
+                    'error'       => $e->getMessage(),
                     'http_status' => $e->getApiResponse()->getStatusCode(),
+                    'content'     => $e->getApiResponse()->getContent(),
+                    'is_mock'     => false,
                 ]
             );
         } catch (Throwable $e) {
             Log::error('MercadoPago createSubscription exception', [
                 'message' => $e->getMessage(),
+                'trace'   => $e->getTraceAsString(),
             ]);
 
             return new GatewayResult(
                 success: false,
                 id: '',
                 status: 'error',
-                payload: ['error' => $e->getMessage()]
+                payload: ['error' => $e->getMessage(), 'is_mock' => false]
             );
         }
     }
