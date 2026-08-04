@@ -159,3 +159,7 @@ html.pm-wizard-locked,body.pm-wizard-locked{height:100%;overflow:hidden!importan
 /* Official Promarine white palette */
 .pm-site:not(.pm-theme-dark){--pm-bg-950:#fff;--pm-bg-900:#fff;--pm-bg-850:#f3f3f3;--pm-bg-800:#eee;--pm-bg-700:#d9d9d9;--pm-cyan:#00735c;--pm-cyan-soft:#108474;--pm-white:#111;--pm-text:#222;--pm-text-soft:#555;--pm-muted:#666;--pm-border:rgba(17,17,17,.16);--pm-border-hover:rgba(0,115,92,.62)}
 .pm-site:not(.pm-theme-dark) .pm-button{background:#00735c}.pm-site:not(.pm-theme-dark) .pm-button:hover{background:#02614e}
+.pm-site:not(.pm-theme-dark) .pm-orbit-card,.pm-site:not(.pm-theme-dark) .pm-choice-card,.pm-site:not(.pm-theme-dark) .pm-plan-card,.pm-site:not(.pm-theme-dark) .pm-summary,.pm-site:not(.pm-theme-dark) .pm-wizard,.pm-site:not(.pm-theme-dark) .pm-calendar-card,.pm-site:not(.pm-theme-dark) .pm-community-card{border-color:#b6babf}
+.pm-site:not(.pm-theme-dark) .pm-field input,.pm-site:not(.pm-theme-dark) .pm-field select,.pm-site:not(.pm-theme-dark) .pm-faq summary,.pm-site:not(.pm-theme-dark) .pm-policy-list span,.pm-site:not(.pm-theme-dark) .pm-wizard__progress,.pm-site:not(.pm-theme-dark) .pm-wizard__actions{border-color:#b6babf}
+.pm-site:not(.pm-theme-dark) .pm-field input:focus,.pm-site:not(.pm-theme-dark) .pm-field select:focus{border-color:#00735c;box-shadow:0 0 0 3px rgba(0,115,92,.14)}
+.pm-site:not(.pm-theme-dark) .pm-theme-toggle{border-color:#00735c}
