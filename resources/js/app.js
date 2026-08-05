@@ -181,8 +181,9 @@ Alpine.data('subscriptionWizard', (products = [], customerProfile = null, repurc
     },
 
     applyTheme() {
-        // Solo sincroniza estado — Alpine :class maneja el DOM
+        // Sincroniza estado Alpine y clases en <html> / <body>
         this.themeLight = localStorage.getItem('promarine-theme') === 'light'; // default → dark
+        this._syncBodyTheme();
         this.$nextTick(() => this._swapThemeImages());
     },
 
@@ -196,6 +197,18 @@ Alpine.data('subscriptionWizard', (products = [], customerProfile = null, repurc
     toggleTheme() {
         this.themeLight = !this.themeLight;
         localStorage.setItem('promarine-theme', this.themeLight ? 'light' : 'dark');
+        this._syncBodyTheme();
+    },
+
+    _syncBodyTheme() {
+        const isDark = !this.themeLight;
+        if (isDark) {
+            document.documentElement.classList.add('pm-theme-dark');
+            document.body.classList.add('pm-theme-dark');
+        } else {
+            document.documentElement.classList.remove('pm-theme-dark');
+            document.body.classList.remove('pm-theme-dark');
+        }
     },
 
     restoreDraft() {
