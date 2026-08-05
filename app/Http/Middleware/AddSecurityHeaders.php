@@ -29,7 +29,7 @@ class AddSecurityHeaders
         $response->headers->set(
             'Content-Security-Policy',
             "default-src 'self'; ".
-            "script-src 'self' 'unsafe-inline' https://www.mercadopago.com https://*.mercadopago.com; ".
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.mercadopago.com https://*.mercadopago.com; ".
             "style-src 'self' 'unsafe-inline'; ".
             "img-src 'self' data: https:; ".
             "font-src 'self' data:; ".

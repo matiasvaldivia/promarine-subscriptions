@@ -1,107 +1,64 @@
-# Promarine Suscripciones — Mobile-First E-Commerce & Subscription Engine
+# 🌊 Promarine Suscripciones — Plataforma E-commerce & Motor de Suscripciones
 
-[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
-[![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
-[![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Tests](https://img.shields.io/badge/Tests-79%20Passed-brightgreen?style=for-the-badge&logo=php&logoColor=white)](tests)
+Plataforma empresarial mobile-first desarrollada en **Laravel 12 (PHP 8.3)**, **Tailwind CSS v4** y **Alpine.js** para la gestión integral del programa *"Suscríbete y Ahorra"* de Promarine.
 
-Plataforma de suscripciones e-commerce mobile-first desarrollada en **Laravel 12**, **Alpine.js** y **Tailwind CSS v4**. Diseñada para orquestar la selección de planes, recurrencia de entrega, cobranza a través de **Mercado Pago** y sincronización de pedidos y ventas hacia **Shopify** e **IGS**.
+Permite la simulación y automatización end-to-end de planes de suscripción marina, integración multi-gateway con **Mercado Pago**, **Shopify** e **IGS**, administración de catálogo de productos/variantes/frecuencias, portal privado de cliente y panel de control administrativo.
 
 ---
 
-## 📌 Tabla de Contenidos
+## 📐 Arquitectura del Sistema
 
-- [Arquitectura del Sistema](#-arquitectura-del-sistema)
-- [Características Principales](#-características-principales)
-- [Seguridad & Hardening](#-seguridad--hardening)
-- [Requisitos Previos e Instalación](#-requisitos-previos-e-instalación)
-- [Comandos de Operación (Makefile)](#-comandos-de-operación-makefile)
-- [Configuración de Entorno (.env)](#-configuración-de-entorno-env)
-- [Suite de Pruebas & Calidad](#-suite-de-pruebas--calidad)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Licencia y Propiedad](#-licencia-y-propiedad)
+```mermaid
+graph TD
+    Client[📱 Cliente / Browser] -->|HTTP / Port 8080| Nginx[🌐 Nginx 1.27]
+    Nginx -->|FastCGI| App[⚡ PHP-FPM 8.3 / Laravel 12]
+    
+    subgraph Core Application Engine
+        App --> Auth[🔐 Auth & Security Middleware]
+        App --> Wizard[🧙‍♂️ 7-Step Subscription Wizard]
+        App --> Admin[🛠️ Admin Dashboard / RBAC]
+        App --> StateEngine[🔄 Order & Subscription State Machine]
+    end
 
----
+    subgraph Storage & Services
+        App -->|Eloquent ORM| MySQL[(🗄️ MySQL 8.4)]
+        App -->|SMTP / Port 8025| Mailpit[✉️ Mailpit Sandbox]
+    end
 
-## 🏗️ Arquitectura del Sistema
+    subgraph Integration Gateways (Mockable)
+        StateEngine --> MPGateway[💳 MercadoPagoGatewayInterface]
+        StateEngine --> ShopifyGateway[🛍️ ShopifyGatewayInterface]
+        StateEngine --> IGSGateway[📊 IGSGatewayInterface]
+    end
 
-La aplicación opera bajo una arquitectura de micro-servicios dockerizada con desacoplamiento mediante Interfaces de Dominio para todas las pasarelas externas:
-
-```text
-               ┌────────────────────────────────────────────────────────┐
-               │                Nginx Reverse Proxy (:8080)             │
-               └───────────────────────────┬────────────────────────────┘
-                                           │
-                                           ▼
-               ┌────────────────────────────────────────────────────────┐
-               │            Laravel 12 Application (PHP 8.3)            │
-               │   Blade Templates + Alpine.js + Tailwind CSS v4 + Vite │
-               └──────┬────────────────────┬────────────────────┬───────┘
-                      │                    │                    │
-                      ▼                    ▼                    ▼
-        ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐
-        │ MercadoPagoGateway│  │  ShopifyGateway   │  │    IGSGateway     │
-        │    Interface      │  │    Interface      │  │    Interface      │
-        └─────────┬─────────┘  └─────────┬─────────┘  └─────────┬─────────┘
-                  │                      │                      │
-                  ▼                      ▼                      ▼
-        ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐
-        │  MockMercadoPago  │  │   MockShopify     │  │      MockIGS      │
-        │      Adapter      │  │     Adapter       │  │      Adapter      │
-        └───────────────────┘  └───────────────────┘  └───────────────────┘
-                      │                    │                    │
-                      └────────────────────┼────────────────────┘
-                                           │
-                                           ▼
-               ┌────────────────────────────────────────────────────────┐
-               │             MySQL 8.4 Engine (Persistencia)            │
-               │    Suscripciones · Pagos · Historial · Auditoría       │
-               └────────────────────────────────────────────────────────┘
+    MPGateway -.->|Mock / Live API| MP[Mercado Pago]
+    ShopifyGateway -.->|Mock / Live REST| Shopify[Shopify Storefront]
+    IGSGateway -.->|Mock / Live API| IGS[IGS Systems]
 ```
 
 ---
 
-## ✨ Características Principales
+## 🔒 Seguridad & Hardening (Auditoría E2E Aprobada)
 
-### 🛒 Storefront & Checkout Mobile-First
-- **Flujo "Armá tu plan"**: Interfaz optimizada e interactiva construida con Alpine.js.
-- **Frecuencias dinámicas**: Configuración flexible de intervalos de despacho y facturación.
-- **Transparencia en Checkout**: Integración sin captura de datos sensibles de tarjetas (cumplimiento PCI-DSS por diseño).
+El sistema cuenta con un esquema de protección de nivel bancario/empresarial:
 
-### ⚙️ Engine de Suscripciones (`MockSubscriptionFlow`)
-- **Idempotencia estricta**: Previene duplicación de cobros y creación doble de pedidos/ventas.
-- **Regla de integridad**: Únicamente los pagos en estado `approved` desencadenan la generación de pedidos e integración IGS.
-- **Persistencia en MySQL**: Trazabilidad completa de decisiones, historial de políticas, versiones de propuestas y eventos de auditoría.
-
-### 🛡️ Panel Administrativo (`/admin`)
-- Autenticación protegida con bloqueo por throttle, CSRF y regeneración de sesión.
-- Gestión de propuestas comerciales y simulaciones de cálculo de comisiones.
-- Exportación de auditoría e historial en formatos **Markdown**, **JSON** y **CSV**.
-
----
-
-## 🔒 Seguridad & Hardening
-
-El sistema cuenta con auditoría E2E aprobada y controles de seguridad activos:
-
-- **Validación de Webhooks con Firma HMAC SHA-256**: Bloqueo directo (HTTP 400 Bad Request) ante notificaciones de Mercado Pago sin cabecera `X-Signature` o con firma inválida.
-- **Middleware de Headers de Seguridad (`AddSecurityHeaders`)**:
-  - `Content-Security-Policy`: Restricción estricta de orígenes autorizados (self + scripts/frames de Mercado Pago).
-  - `Strict-Transport-Security (HSTS)`: Habilitado automáticamente bajo conexiones HTTPS.
-  - `Permissions-Policy`: Desactivación de APIs sensibles del navegador (`camera=()`, `microphone=()`, `geolocation=()`).
-- **Protección contra Información de Servidor**: Remoción explícita del header `X-Powered-By` en bootstrap.
-- **Indexación Bloqueada**: Inclusión automática de metaetiquetas `noindex, nofollow` en rutas administrativas.
+- **Validación Estricta de Webhooks (Mercado Pago)**: Firma **HMAC SHA-256** obligatoria via header `X-Signature`. Las solicitudes sin firma o con firma inválida son rechazadas inmediatamente con **HTTP 400 Bad Request**.
+- **Middleware `AddSecurityHeaders`**:
+  - `Content-Security-Policy`: Restricción estricta de fuentes de script, estilos, frames e imágenes (`self`, `'unsafe-inline'`, `'unsafe-eval'`, dominios autorizados de Mercado Pago).
+  - `Strict-Transport-Security (HSTS)`: Activado automáticamente bajo conexiones HTTPS (`max-age=31536000; includeSubDomains`).
+  - `Permissions-Policy`: Bloqueo preventivo de sensores y APIs sensibles (`camera=()`, `microphone=()`, `geolocation=()`, `payment=()`).
+- **Ocultamiento de Fingerprinting**: Remoción explícita del encabezado `X-Powered-By` en el arranque de la aplicación.
+- **Protección Administrativa**: Autenticación con throttling, regeneración de sesión contra Session Fixation, protección CSRF en todos los formularios y directivas `noindex, nofollow` en rutas `/admin`.
+- **Zero PCI Scope**: El checkout no recopila ni almacena datos de tarjeta de crédito/débito ni códigos CVV en servidores propios.
 
 ---
 
 ## 🚀 Requisitos Previos e Instalación
 
 ### Requisitos
-- **Docker Desktop** (con soporte para Compose)
+- **Docker Desktop** (con soporte para Docker Compose v2)
 - **Git**
-- **Node.js 20+** (para desarrollo local sin Docker)
+- **Make** (opcional, simplifica comandos de consola)
 
 ### Paso a paso
 
@@ -115,99 +72,77 @@ El sistema cuenta con auditoría E2E aprobada y controles de seguridad activos:
    ```bash
    cp .env.example .env
    ```
-   *Nota: Configurar `DB_PASSWORD`, `DB_ROOT_PASSWORD`, `TAMARA_USERNAME` y `TAMARA_PASSWORD` en el archivo `.env`.*
+   *Asegúrese de definir contraseñas locales para MySQL (`DB_PASSWORD`, `DB_ROOT_PASSWORD`) y las credenciales de administración (`TAMARA_USERNAME`, `TAMARA_PASSWORD`).*
 
-3. **Desplegar con Docker:**
+3. **Desplegar e inicializar la aplicación:**
    ```bash
    make install
-   # O alternativamente: docker compose up -d
+   # O alternativamente: docker compose up -d && docker compose exec app php artisan migrate --seed
    ```
 
 4. **Acceso a Servicios Locales:**
-   - **Landing / Storefront**: [http://localhost:8080](http://localhost:8080)
-   - **Login Administrativo**: [http://localhost:8080/admin/login](http://localhost:8080/admin/login)
-   - **Mailpit (Sandbox de correo)**: [http://localhost:8025](http://localhost:8025)
+   - 🌐 **Storefront / Landing**: [http://localhost:8080](http://localhost:8080)
+   - 🔐 **Login Administrativo**: [http://localhost:8080/admin/login](http://localhost:8080/admin/login)
+   - 📊 **Panel de Control**: [http://localhost:8080/admin](http://localhost:8080/admin)
+   - ✉️ **Mailpit (Sandbox de correo)**: [http://localhost:8025](http://localhost:8025)
 
 ---
 
-## 🛠️ Comandos de Operación (Makefile)
-
-El archivo `Makefile` simplifica la gestión del ciclo de vida del contenedor:
+## 🛠️ Comandos de Operación (`Makefile`)
 
 | Comando | Descripción |
 | :--- | :--- |
 | `make up` | Inicia todos los contenedores en segundo plano. |
-| `make down` | Detiene los contenedores preservando los datos de MySQL. |
-| `make fresh` | Recrea la base de datos local y ejecuta los seeders. |
+| `make down` | Detiene los contenedores preservando la base de datos MySQL. |
+| `make fresh` | Recrea las tablas de MySQL y ejecuta los seeders de catálogo y usuarios. |
 | `make test` | Ejecuta la suite de pruebas automatizadas (PHPUnit / Pest). |
-| `make logs` | Muestra los logs en tiempo real del servidor PHP/Nginx. |
+| `make logs` | Muestra los logs en tiempo real de Nginx y PHP-FPM. |
 | `make shell` | Abre una terminal interactiva dentro del contenedor PHP. |
-| `make import-promarine` | Refresca los recursos públicos e imágenes desde endpoints oficiales. |
+| `make import-promarine` | Refresca recursos públicos y sincroniza el manifiesto de imágenes. |
 
 ---
 
-## ⚙️ Configuración de Entorno (.env)
+## ⚙️ Configuración de Modos de Integración (`.env`)
 
-El comportamiento de los adaptadores de integración se controla mediante variables de modo:
+Los adaptadores de integración operan bajo una arquitectura desacoplada basada en Interfaces (`GatewayInterface`). Se controlan mediante variables de modo:
 
 ```dotenv
 # Modos de Adaptadores (mock / live)
 MERCADOPAGO_MODE=mock
 SHOPIFY_MODE=mock
 IGS_MODE=mock
-
-# Credenciales Sandbox para Pruebas de Mercado Pago
-# DNI de prueba: 12345678
-# Titular: Nombre exacto según la tarjeta de prueba utilizada
 ```
 
-*En entorno local, los registros creados incluyen el flag `is_mock=true` y `environment=local`.*
+- En modo `mock`, todas las llamadas simulan aprobaciones/rechazos de forma idéntica al entorno real sin impactar servicios ni cobrar dinero.
+- Cada registro persistido en la base de datos incluye la bandera `is_mock=true` y `environment=local`.
 
 ---
 
-## 🧪 Suite de Pruebas & Calidad
+## 🧪 Suite de Pruebas & Cobertura
 
-La suite automatizada valida la integridad de los flujos de pago, webhooks, modelos y reglas de negocio:
+El proyecto cuenta con una suite completa de pruebas unitarias y de integración:
 
 ```bash
-# Ejecutar suite completa
-php artisan test
-
-# Salida esperada:
-# Tests: 79 passed (266 assertions)
+docker compose exec app php artisan test
 ```
+
+### Estado de la Auditoría E2E:
+- ✅ **79/79 Tests Aprobados** (266 Aserciones).
+- 🛡️ **P0 (Crítico)**: Requisito de firma en Webhook MP implementado y verificado.
+- 🛡️ **P1 (Alto)**: Middleware de cabeceras de seguridad CSP, HSTS y Permissions-Policy activo.
+- 🎨 **Build de Frontend**: Compilación exitosa via Vite (`npm run build`).
 
 ---
 
-## 📁 Estructura del Proyecto
+## 🚦 Estado del Proyecto & Roadmap a Producción
 
-```text
-promarine-subscriptions/
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/         # Controladores de Storefront, Admin y Webhooks
-│   │   └── Middleware/          # AddSecurityHeaders y autenticación
-│   ├── Services/
-│   │   ├── Gateways/            # Interfaces e Implementaciones Mock (MP, Shopify, IGS)
-│   │   └── SubscriptionEngine/  # Lógica central del flujo de suscripciones
-│   └── Models/                  # Modelos Eloquent con auditoría y casts
-├── bootstrap/                   # Configuración del framework y middlewares
-├── config/                      # Archivos de configuración
-├── database/                    # Migraciones, Seeders y Factories
-├── docker/                      # Configuraciones de Nginx y PHP-FPM
-├── public/                      # Entrypoint public e imágenes importadas
-├── resources/
-│   ├── css/                     # Estilos Tailwind CSS v4
-│   ├── js/                      # Lógica frontend y Alpine.js
-│   └── views/                   # Plantillas Blade (Storefront y Admin)
-├── routes/                      # Definición de rutas (web, admin, api, webhooks)
-├── tests/                       # Suite de pruebas unitarias y de integración
-├── docker-compose.yml           # Definición del entorno Docker
-└── Makefile                     # Accesos directos para desarrollo
-```
+Actualmente el sistema se encuentra:
+- ✅ **Listo para Demo Interna**
+- ⚠️ **Listo para Homologación**
+- ❌ **No listo para Producción Comercial** (Requiere ajustes de accesibilidad P2/P3, backups automáticos, SSL end-to-end y credenciales productivas de MP/Shopify/IGS).
 
 ---
 
-## 📄 Licencia y Propiedad
+## 📄 Licencia
 
-Desarrollado para **Promarine**. Todos los derechos reservados.
+Desarrollado exclusivamente para **Promarine**. Todos los derechos reservados.
