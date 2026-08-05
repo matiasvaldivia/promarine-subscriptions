@@ -201,10 +201,12 @@ html.pm-wizard-locked,body.pm-wizard-locked{height:100%;overflow:hidden!importan
 .pm-site:not(.pm-theme-dark) .pm-certifications__header small{color:#718096}
 .pm-site:not(.pm-theme-dark) .pm-cert-item{background:rgba(0,0,0,.03);border-color:#d1d5db}
 .pm-site:not(.pm-theme-dark) .pm-faq{background:#fff}
-.pm-site:not(.pm-theme-dark) .pm-faq details{background:#f8f9fa;border-color:#d1d5db}
-.pm-site:not(.pm-theme-dark) .pm-faq summary{color:#222;border-color:#d1d5db}
-.pm-site:not(.pm-theme-dark) .pm-faq details p{color:#4a5568}
-.pm-site:not(.pm-theme-dark) .pm-policy-list span{color:#4a5568;border-color:#d1d5db;background:#f8f9fa}
+.pm-site:not(.pm-theme-dark) .pm-faq details{background:#fff;border-color:#d1d5db;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.pm-site:not(.pm-theme-dark) .pm-faq summary{color:#0f172a;background:#f8fafc;border-color:#cbd5e1;font-weight:600}
+.pm-site:not(.pm-theme-dark) .pm-faq summary:hover{background:#f1f5f9;color:#0b8fa3}
+.pm-site:not(.pm-theme-dark) .pm-faq details[open] summary{background:#eef6f7;border-bottom:1px solid #d1d5db;color:#087a8d}
+.pm-site:not(.pm-theme-dark) .pm-faq details p{color:#334155;background:#fff}
+.pm-site:not(.pm-theme-dark) .pm-policy-list span{color:#475569;border-color:#cbd5e1;background:#f8fafc}
 .pm-site:not(.pm-theme-dark) .pm-final-cta{background:#f0faf7;border-top-color:#d1d5db}
 .pm-site:not(.pm-theme-dark) .pm-final-cta span{color:#00735c}
 .pm-site:not(.pm-theme-dark) .pm-final-cta h2{color:#111}
