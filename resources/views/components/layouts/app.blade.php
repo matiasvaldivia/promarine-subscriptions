@@ -38,7 +38,7 @@
   colorSchemeMeta.content = isDark ? 'dark' : 'light';
 })();
 </script>
-<script defer src="https://analytics.influencergrowthsystem.com/script.js" data-website-id="07e990e7-09fb-4421-9247-071e3e1545f4"></script>
+<script defer src="https://analytics.influencergrowthsystem.com/script.js" data-website-id="6eb9fce5-b857-4a3c-9f5a-73d9200a7804"></script>
 @vite(['resources/css/app.css','resources/js/app.js'])
 </head>
 <body class="font-sans antialiased pm-site" x-data x-init="
