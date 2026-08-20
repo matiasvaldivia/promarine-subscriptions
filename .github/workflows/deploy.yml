@@ -16,11 +16,31 @@ jobs:
 
       - name: Deploy via SSH to VPS
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          MAIL_FROM_ADDRESS: ${{ secrets.MAIL_FROM_ADDRESS }}
+          MAIL_FROM_NAME: ${{ secrets.MAIL_FROM_NAME }}
+          MP_ACCESS_TOKEN: ${{ secrets.MP_ACCESS_TOKEN }}
+          MP_PUBLIC_KEY: ${{ secrets.MP_PUBLIC_KEY }}
+          MP_CLAVE_WEBHOOK: ${{ secrets.MP_CLAVE_WEBHOOK }}
+          MP_PUBLIC_URL: ${{ secrets.MP_PUBLIC_URL }}
+          URL_MP_WEBHOOKS: ${{ secrets.URL_MP_WEBHOOKS }}
+          TAMARA_USERNAME: ${{ secrets.TAMARA_USERNAME }}
+          TAMARA_PASSWORD: ${{ secrets.TAMARA_PASSWORD }}
         with:
           host: ${{ secrets.SSH_HOST || '161.97.115.114' }}
           username: ${{ secrets.SSH_USER || 'root' }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          command_timeout: 30m
           envs: >
             APP_KEY,DB_HOST,DB_PORT,DB_DATABASE,DB_USERNAME,DB_PASSWORD,
             MAIL_HOST,MAIL_PORT,MAIL_PASS,MAIL_FROM_ADDRESS,MAIL_FROM_NAME,
