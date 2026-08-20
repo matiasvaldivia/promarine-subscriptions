@@ -17,9 +17,9 @@ services:
       APP_URL: ${APP_URL:-http://localhost:8080}
       TAMARA_USERNAME: ${TAMARA_USERNAME:-${user_tamar:-}}
       TAMARA_PASSWORD: ${TAMARA_PASSWORD:-${pass_tamar:-}}
-      MERCADOPAGO_MODE: mock
-      SHOPIFY_MODE: mock
-      IGS_MODE: mock
+      MERCADOPAGO_MODE: ${MERCADOPAGO_MODE:-mock}
+      SHOPIFY_MODE: ${SHOPIFY_MODE:-mock}
+      IGS_MODE: ${IGS_MODE:-mock}
     depends_on:
       mysql:
         condition: service_healthy
@@ -32,7 +32,7 @@ services:
     depends_on: [app]
   mysql:
     image: mysql:8.4
-    ports: ["33060:3306"]
+    ports: ["33061:3306"]
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-${base_name:-promarine_subscriptions}}
       MYSQL_USER: ${DB_USERNAME:-${user_bd:-promarine}}

@@ -1,0 +1,91 @@
+name: Deploy to Production (161.97.115.114)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to VPS Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST || '161.97.115.114' }}
+          username: ${{ secrets.SSH_USER || 'root' }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          envs: >
+            APP_KEY,DB_HOST,DB_PORT,DB_DATABASE,DB_USERNAME,DB_PASSWORD,
+            MAIL_HOST,MAIL_PORT,MAIL_PASS,MAIL_FROM_ADDRESS,MAIL_FROM_NAME,
+            MP_ACCESS_TOKEN,MP_PUBLIC_KEY,MP_CLAVE_WEBHOOK,MP_PUBLIC_URL,
+            URL_MP_WEBHOOKS,TAMARA_USERNAME,TAMARA_PASSWORD
+          script: |
+            set -e
+
+            TARGET_DIR="${{ secrets.DEPLOY_PATH || '/var/www/promarine-subscriptions' }}"
+
+            echo "==> Desplegando en: $TARGET_DIR"
+            
+            if [ ! -d "$TARGET_DIR" ]; then
+              echo "==> Creando directorio y clonando repositorio..."
+              mkdir -p "$TARGET_DIR"
+              git clone git@github.com:matiasvaldivia/promarine-subscriptions.git "$TARGET_DIR"
+            fi
+
+            cd "$TARGET_DIR"
+
+            echo "==> Actualizando código fuente..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "==> Generando archivo .env desde Secrets..."
+            cat << 'EOF' > .env
+            APP_NAME="Promarine Suscripciones"
+            APP_ENV=production
+            APP_DEBUG=false
+            APP_KEY=${APP_KEY}
+            APP_URL=${MP_PUBLIC_URL:-http://161.97.115.114:8080}
+
+            DB_CONNECTION=mysql
+            DB_HOST=${DB_HOST:-mysql}
+            DB_PORT=${DB_PORT:-3306}
+            DB_DATABASE=${DB_DATABASE:-promarine_subscriptions}
+            DB_USERNAME=${DB_USERNAME:-promarine}
+            DB_PASSWORD=${DB_PASSWORD}
+
+            MAIL_MAILER=smtp
+            MAIL_HOST=${MAIL_HOST}
+            MAIL_PORT=${MAIL_PORT:-587}
+            MAIL_PASSWORD=${MAIL_PASS}
+            MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+            MAIL_FROM_NAME="${MAIL_FROM_NAME:-Promarine}"
+
+            MERCADOPAGO_MODE=production
+            MP_ACCESS_TOKEN=${MP_ACCESS_TOKEN}
+            MP_PUBLIC_KEY=${MP_PUBLIC_KEY}
+            MP_CLAVE_WEBHOOK=${MP_CLAVE_WEBHOOK}
+            MP_PUBLIC_URL=${MP_PUBLIC_URL}
+            URL_MP_WEBHOOKS=${URL_MP_WEBHOOKS}
+
+            TAMARA_USERNAME=${TAMARA_USERNAME}
+            TAMARA_PASSWORD=${TAMARA_PASSWORD}
+            EOF
+
+            echo "==> Levantando contenedores Docker (Producción: App + Nginx)..."
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            echo "==> Ejecutando migraciones y optimizaciones de Laravel..."
+            docker compose -f docker-compose.prod.yml exec -T app php artisan storage:link || true
+            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+            docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
+            docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
+            docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+
+            echo "==> Despliegue completado con éxito en 161.97.115.114."
