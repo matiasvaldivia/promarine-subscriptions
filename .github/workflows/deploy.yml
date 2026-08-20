@@ -52,7 +52,7 @@ jobs:
             TARGET_DIR="${{ secrets.DEPLOY_PATH || '/var/www/promarine-subscriptions' }}"
 
             echo "==> Desplegando en: $TARGET_DIR"
-            
+
             if [ ! -d "$TARGET_DIR" ]; then
               echo "==> Creando directorio y clonando repositorio..."
               mkdir -p "$TARGET_DIR"
@@ -67,42 +67,49 @@ jobs:
 
             echo "==> Generando archivo .env desde Secrets con expansión de variables..."
             cat << EOF > .env
-            APP_NAME="Promarine Suscripciones"
-            APP_ENV=production
-            APP_DEBUG=false
-            APP_KEY=${APP_KEY}
-            APP_URL=${MP_PUBLIC_URL:-http://161.97.115.114:8080}
+APP_NAME="Promarine Suscripciones"
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=${APP_KEY}
+APP_URL=https://promarine.influencergrowthsystem.com
 
-            DB_CONNECTION=mysql
-            DB_HOST=${DB_HOST:-mysql}
-            DB_PORT=${DB_PORT:-3306}
-            DB_DATABASE=${DB_DATABASE:-promarine_subscriptions}
-            DB_USERNAME=${DB_USERNAME:-promarine}
-            DB_PASSWORD=${DB_PASSWORD}
+DB_CONNECTION=mysql
+DB_HOST=${DB_HOST:-mysql}
+DB_PORT=${DB_PORT:-3306}
+DB_DATABASE=${DB_DATABASE:-promarine_subscriptions}
+DB_USERNAME=${DB_USERNAME:-promarine}
+DB_PASSWORD=${DB_PASSWORD}
 
-            MAIL_MAILER=smtp
-            MAIL_HOST=${MAIL_HOST}
-            MAIL_PORT=${MAIL_PORT:-587}
-            MAIL_PASSWORD=${MAIL_PASS}
-            MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
-            MAIL_FROM_NAME="${MAIL_FROM_NAME:-Promarine}"
+MAIL_MAILER=smtp
+MAIL_HOST=${MAIL_HOST}
+MAIL_PORT=${MAIL_PORT:-587}
+MAIL_PASSWORD=${MAIL_PASS}
+MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+MAIL_FROM_NAME="${MAIL_FROM_NAME:-Promarine}"
 
-            MERCADOPAGO_MODE=production
-            MP_ACCESS_TOKEN=${MP_ACCESS_TOKEN}
-            MP_PUBLIC_KEY=${MP_PUBLIC_KEY}
-            MP_CLAVE_WEBHOOK=${MP_CLAVE_WEBHOOK}
-            MP_PUBLIC_URL=${MP_PUBLIC_URL}
-            URL_MP_WEBHOOKS=${URL_MP_WEBHOOKS}
+MERCADOPAGO_MODE=production
+MP_ACCESS_TOKEN=${MP_ACCESS_TOKEN}
+MP_PUBLIC_KEY=${MP_PUBLIC_KEY}
+MP_CLAVE_WEBHOOK=${MP_CLAVE_WEBHOOK}
+MP_PUBLIC_URL=${MP_PUBLIC_URL}
+URL_MP_WEBHOOKS=${URL_MP_WEBHOOKS}
 
-            TAMARA_USERNAME=${TAMARA_USERNAME}
-            TAMARA_PASSWORD=${TAMARA_PASSWORD}
-            EOF
+TAMARA_USERNAME=${TAMARA_USERNAME}
+TAMARA_PASSWORD=${TAMARA_PASSWORD}
+EOF
 
-            # Remover sangría inicial si cat heredó espacios
-            sed -i 's/^[ \t]*//' .env
+            echo "==> Compilando assets frontend con Vite (Node 22 via Docker)..."
+            docker run --rm \
+              -v "$(pwd)":/app \
+              -w /app \
+              node:22-alpine \
+              sh -c 'npm ci --prefer-offline && npm run build'
 
             echo "==> Levantando contenedores Docker (Producción: App + Nginx)..."
             docker compose -f docker-compose.prod.yml up -d --build
+
+            echo "==> Conectando nginx a la red proxy-net de NPM (idempotente)..."
+            docker network connect proxy-net promarine-subscriptions-nginx-1 2>/dev/null || true
 
             echo "==> Instalando dependencias de Composer en producción..."
             docker compose -f docker-compose.prod.yml exec -T app composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
@@ -114,4 +121,4 @@ jobs:
             docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
             docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
 
-            echo "==> Despliegue completado con éxito en 161.97.115.114."
+            echo "==> Despliegue completado en https://promarine.influencergrowthsystem.com ✅"
