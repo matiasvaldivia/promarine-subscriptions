@@ -65,8 +65,8 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            echo "==> Generando archivo .env desde Secrets..."
-            cat << 'EOF' > .env
+            echo "==> Generando archivo .env desde Secrets con expansión de variables..."
+            cat << EOF > .env
             APP_NAME="Promarine Suscripciones"
             APP_ENV=production
             APP_DEBUG=false
@@ -98,8 +98,14 @@ jobs:
             TAMARA_PASSWORD=${TAMARA_PASSWORD}
             EOF
 
+            # Remover sangría inicial si cat heredó espacios
+            sed -i 's/^[ \t]*//' .env
+
             echo "==> Levantando contenedores Docker (Producción: App + Nginx)..."
             docker compose -f docker-compose.prod.yml up -d --build
+
+            echo "==> Instalando dependencias de Composer en producción..."
+            docker compose -f docker-compose.prod.yml exec -T app composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
             echo "==> Ejecutando migraciones y optimizaciones de Laravel..."
             docker compose -f docker-compose.prod.yml exec -T app php artisan storage:link || true

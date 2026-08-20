@@ -6,8 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     unzip \
-    nodejs \
-    npm \
     && install-php-extensions bcmath intl pdo_mysql zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
